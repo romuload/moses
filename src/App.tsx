@@ -4,15 +4,21 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { chapters } from './content';
 import { FeatureCards } from './components/FeatureCards';
+import { createFrameSequence } from './frameSequence';
 const asset = (path: string) => import.meta.env.BASE_URL + path;
 gsap.registerPlugin(ScrollTrigger);
+// Mobile browser bars resize the viewport while scrolling; don't re-layout the pin for that.
+ScrollTrigger.config({ ignoreMobileResize: true });
+const FRAME_COUNT = 120;
 const number = (i: number) => String(i + 1).padStart(2, '0');
 
 export default function App() {
  const root = useRef<HTMLDivElement>(null);
  const video = useRef<HTMLVideoElement>(null);
+ const canvas = useRef<HTMLCanvasElement>(null);
  const trigger = useRef<ScrollTrigger | null>(null);
- const [videoSrc] = useState(() => matchMedia("(max-width: 767px)").matches ? asset("videos/moses-red-sea-mobile.mp4") : asset("videos/moses-red-sea.mp4"));
+ // Touch devices scrub a canvas image sequence; seeking <video> per scroll step is too slow there.
+ const [useFrames] = useState(() => matchMedia('(max-width: 767px), (pointer: coarse)').matches);
  const [menu, setMenu] = useState(false);
  const [loaded, setLoaded] = useState(false);
  const [failed, setFailed] = useState(false);
@@ -30,8 +36,15 @@ export default function App() {
   if (st) window.scrollTo({ top: st.start + (st.end - st.start) * (.14 + .86 * Math.min(chapters[i].start + .015, 1)), behavior: 'smooth' });
  };
  useEffect(() => {
-  if (reduced || failed || !root.current || !video.current) return;
+  if (reduced || failed || !root.current || !(useFrames ? canvas.current : video.current)) return;
   const el = video.current;
+  const sequence = useFrames ? createFrameSequence(canvas.current!, {
+   count: FRAME_COUNT,
+   src: i => asset(`frames/${String(i + 1).padStart(3, '0')}.webp`),
+   focusX: matchMedia('(max-width: 767px)').matches ? .3 : .58,
+   onFirstFrame: () => setLoaded(true),
+   onError: () => setFailed(true),
+  }) : null;
   let target = 0, smoothed = 0, raf = 0, last = -1;
   const cards = [...root.current.querySelectorAll<HTMLElement>('.narrative')];
   const markers = [...root.current.querySelectorAll<HTMLButtonElement>('.chapter-marker')];
@@ -64,11 +77,15 @@ export default function App() {
   const frame = () => {
    smoothed += (target - smoothed) * .16;
    if (Math.abs(target - smoothed) < .0001) smoothed = target;
-   if (el.readyState >= 2 && Number.isFinite(el.duration) && !el.seeking) {
-    const time = smoothed * Math.max(0, el.duration - .045);
-    if (Math.abs(el.currentTime - time) > .025) el.currentTime = time;
+   let displayed = smoothed;
+   if (sequence) { sequence.set(smoothed); sequence.render(); }
+   else if (el) {
+    if (el.readyState >= 2 && Number.isFinite(el.duration) && !el.seeking) {
+     const time = smoothed * Math.max(0, el.duration - .045);
+     if (Math.abs(el.currentTime - time) > .025) el.currentTime = time;
+    }
+    if (el.duration > 0) displayed = el.currentTime / el.duration;
    }
-   const displayed = el.duration > 0 && !failed ? el.currentTime / el.duration : smoothed;
    const active = chapters.reduce((found, c, index) => displayed >= c.start ? index : found, 0);
    const i = Math.max(0, active);
    const visible = target > .002;
@@ -83,16 +100,16 @@ export default function App() {
   };
   raf = requestAnimationFrame(frame);
   const refresh = () => ScrollTrigger.refresh();
-  el.addEventListener('loadedmetadata', refresh);
+  el?.addEventListener('loadedmetadata', refresh);
   document.fonts.ready.then(refresh);
-  return () => { cancelAnimationFrame(raf); el.removeEventListener('loadedmetadata', refresh); ctx.revert(); trigger.current = null; };
- }, [reduced, failed]);
+  return () => { cancelAnimationFrame(raf); sequence?.dispose(); el?.removeEventListener('loadedmetadata', refresh); ctx.revert(); trigger.current = null; };
+ }, [reduced, failed, useFrames]);
  useEffect(() => { const escape = (e: KeyboardEvent) => { if(e.key === 'Escape') setMenu(false); }; document.addEventListener('keydown', escape); return () => document.removeEventListener('keydown', escape); }, []);
  return <div ref={root}>
   <a className="skip-link" href="#ending">Pular experiência</a>
   <section className="cinema" id="historias" aria-label="Moisés, a abertura do Mar">
    <div className="cinematic-media">
-    {reduced ? <img src={asset("images/moses-hero.webp")} alt="Moisés diante do Mar Vermelho, entre o povo e as águas" /> : <video ref={video} src={videoSrc} muted playsInline preload="auto" poster={asset("images/moses-hero.webp")} onLoadedData={() => setLoaded(true)} onError={() => setFailed(true)} aria-label="Cena cinematográfica de Moisés abrindo o mar; controlada pela rolagem"></video>}
+    {reduced ? <img src={asset("images/moses-hero.webp")} alt="Moisés diante do Mar Vermelho, entre o povo e as águas" /> : useFrames ? <canvas ref={canvas} role="img" aria-label="Cena cinematográfica de Moisés abrindo o mar; controlada pela rolagem"></canvas> : <video ref={video} src={asset("videos/moses-red-sea.mp4")} muted playsInline preload="auto" poster={asset("images/moses-hero.webp")} onLoadedData={() => setLoaded(true)} onError={() => setFailed(true)} aria-label="Cena cinematográfica de Moisés abrindo o mar; controlada pela rolagem"></video>}
    </div>
    {!reduced && <img className="hero-poster" src={asset("images/moses-hero.webp")} alt="Moisés diante do mar e da multidão" fetchPriority="high"/>}
    <div className="hero-shade"/><div className="edge-shade"/>

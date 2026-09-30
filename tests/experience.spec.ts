@@ -39,3 +39,15 @@ test('unavailable video falls back to illustrated chapters',async({page})=>{
  await expect(page.locator('.static-chapters article')).toHaveCount(5);
  await expect(page.locator('.pin-spacer')).toHaveCount(0);
 });
+test('mobile scrubs a canvas frame sequence instead of seeking video',async({page})=>{
+ const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+ await page.setViewportSize({width:390,height:844}); await page.goto('/');
+ await expect(page.locator('video')).toHaveCount(0);
+ await expect(page.locator('.cinematic-media canvas')).toHaveCount(1);
+ await expect(page.locator('.media-status')).toHaveCount(0);
+ const pixel = () => page.locator('.cinematic-media canvas').evaluate((c: HTMLCanvasElement) => Array.from(c.getContext('2d')!.getImageData(c.width/2, c.height/2, 1, 1).data).join());
+ const start = await pixel();
+ await page.evaluate(() => scrollTo(0, innerHeight * 4));
+ await expect.poll(pixel).not.toBe(start);
+ expect(errors).toEqual([]);
+});
