@@ -15,10 +15,10 @@ npm run preview
 
 ## Material usado
 
-Vídeo selecionado nas duas versões: `video-moises.mp4` (720×1280, 24 fps, aproximadamente 14 segundos). Desktop usa `public/videos/moises-v2.mp4`, sem áudio e com keyframes a cada seis frames. Celular usa 111 frames WebP de 360×640 em `public/frames/moises-v2`, com interpolação, três carregamentos simultâneos e resolução de canvas limitada a 1,5×. Capa, encerramento e capítulos `moises-v2-*` vêm da mesma fonte.
+Vídeo selecionado nas duas versões: `video-moises.mp4` (720×1280, 24 fps, 13 segundos úteis, com o clarão final do original removido). Desktop usa `public/videos/moises-v3.mp4`, sem áudio e com keyframes a cada seis frames. Celular usa 104 frames WebP de 360×640 em `public/frames/moises-v3`, com interpolação, três carregamentos simultâneos e resolução de canvas limitada a 1,5×. Capa, encerramento e capítulos `moises-v2-*` vêm da mesma fonte.
 
 - `public/images/moises-v2-hero.webp`: capa extraída do novo vídeo.
-- `public/images/moises-v2-ending.webp`: encerramento da mesma cena.
+- `public/images/moises-v3-ending.webp`: encerramento da mesma cena.
 - `public/images/moises-v2-chapter-*.webp`: cenas para leitura com movimento reduzido.
 
 Os originais na raiz permanecem intactos. A prévia do próximo episódio é editorial e marcada como “Em breve”.

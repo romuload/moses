@@ -56,7 +56,7 @@ test('mobile scrubs a canvas frame sequence instead of seeking video',async({pag
 
 test('mobile frame failure falls back to illustrated chapters', async ({ page }) => {
  await page.setViewportSize({ width: 390, height: 844 });
- await page.route('**/frames/moises-v2/001.webp', route => route.abort());
+ await page.route('**/frames/moises-v3/001.webp', route => route.abort());
  await page.goto('/');
  await expect(page.locator('.static-chapters article')).toHaveCount(5);
  await expect(page.locator('.pin-spacer')).toHaveCount(0);
