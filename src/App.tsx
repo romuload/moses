@@ -9,7 +9,7 @@ const asset = (path: string) => import.meta.env.BASE_URL + path;
 gsap.registerPlugin(ScrollTrigger);
 // Mobile browser bars resize the viewport while scrolling; don't re-layout the pin for that.
 ScrollTrigger.config({ ignoreMobileResize: true });
-const FRAME_COUNT = 120;
+const FRAME_COUNT = 111;
 const number = (i: number) => String(i + 1).padStart(2, '0');
 
 export default function App() {
@@ -40,8 +40,8 @@ export default function App() {
   const el = video.current;
   const sequence = useFrames ? createFrameSequence(canvas.current!, {
    count: FRAME_COUNT,
-   src: i => asset(`frames/${String(i + 1).padStart(3, '0')}.webp`),
-   focusX: matchMedia('(max-width: 767px)').matches ? .3 : .58,
+   src: i => asset(`frames/moises-v2/${String(i + 1).padStart(3, '0')}.webp`),
+   focusX: .5,
    onFirstFrame: () => setLoaded(true),
    onError: () => setFailed(true),
   }) : null;
@@ -109,9 +109,9 @@ export default function App() {
   <a className="skip-link" href="#ending">Pular experiência</a>
   <section className="cinema" id="historias" aria-label="Moisés, a abertura do Mar">
    <div className="cinematic-media">
-    {reduced ? <img src={asset("images/moses-hero.webp")} alt="Moisés diante do Mar Vermelho, entre o povo e as águas" /> : useFrames ? <canvas ref={canvas} role="img" aria-label="Cena cinematográfica de Moisés abrindo o mar; controlada pela rolagem"></canvas> : <video ref={video} src={asset("videos/moses-red-sea.mp4")} muted playsInline preload="auto" poster={asset("images/moses-hero.webp")} onLoadedData={() => setLoaded(true)} onError={() => setFailed(true)} aria-label="Cena cinematográfica de Moisés abrindo o mar; controlada pela rolagem"></video>}
+    {reduced ? <img src={asset("images/moises-v2-hero.webp")} alt="Moisés diante do Mar Vermelho, entre o povo e as águas" /> : useFrames ? <canvas ref={canvas} role="img" aria-label="Cena cinematográfica de Moisés abrindo o mar; controlada pela rolagem"></canvas> : <video ref={video} src={asset("videos/moises-v2.mp4")} muted playsInline preload="auto" poster={asset("images/moises-v2-hero.webp")} onLoadedData={() => setLoaded(true)} onError={() => setFailed(true)} aria-label="Cena cinematográfica de Moisés abrindo o mar; controlada pela rolagem"></video>}
    </div>
-   {!reduced && <img className="hero-poster" src={asset("images/moses-hero.webp")} alt="Moisés diante do mar e da multidão" fetchPriority="high"/>}
+   {!reduced && <img className="hero-poster" src={asset("images/moises-v2-hero.webp")} alt="Moisés diante do mar e da multidão" fetchPriority="high"/>}
    <div className="hero-shade"/><div className="edge-shade"/>
    <header className="topbar"><a className="wordmark" href="#historias" onClick={() => window.scrollTo({top:0,behavior:reduced?'instant':'smooth'})}>EXODUS<span>.</span></a><nav aria-label="Navegação principal"><a href="#historias">Histórias</a><a href="#episodios">Episódios</a><a href="#sobre">Sobre</a><button className="menu-toggle" aria-label={menu ? 'Fechar menu' : 'Abrir menu'} aria-expanded={menu} aria-controls="chapter-menu" onClick={() => setMenu(!menu)}>{menu ? <X size={21}/> : <Menu size={21}/>}</button></nav></header>
    {menu && <nav id="chapter-menu" className="chapter-menu glass" aria-label="Capítulos">{chapters.map((c,i)=><button key={c.label} onClick={()=>goChapter(i)}><span>{number(i)}</span>{c.title}<ArrowUpRight size={16}/></button>)}</nav>}
@@ -120,8 +120,8 @@ export default function App() {
    {!reduced && <div className="film-hud" inert><div className="film-label">EXODUS / MOISÉS<span>UMA JORNADA ATRAVÉS DO IMPOSSÍVEL</span></div>{chapters.map((c,i)=><article className={`narrative glass ${i%2 ? 'right' : 'left'}`} aria-hidden="true" key={c.label}><div className="card-top"><c.icon size={23}/><span>{number(i)} / {c.label}</span></div><h2>{c.title}</h2><p>{c.text}</p><div className="chapter-progress"><span/></div></article>)}<nav className="chapter-nav" aria-label="Progresso dos capítulos">{chapters.map((c,i)=><button className="chapter-marker" key={c.label} onClick={()=>goChapter(i)} aria-label={`Capítulo ${i+1}: ${c.title}`}><span>{number(i)}</span><i/></button>)}</nav><a className="skip-film" href="#ending">Ir ao desfecho <ArrowRight size={14}/></a><div className="film-progress"><span/></div></div>}
    {!loaded && !reduced && <div className="media-status" role="status">{failed ? 'Vídeo indisponível. A história continua em texto.' : 'Preparando a experiência…'}</div>}
   </section>
-  {(reduced || failed) && <section className="static-chapters" aria-label="A história em cinco capítulos">{chapters.map((c,i)=><article id={`static-${i}`} key={c.label}><img src={asset(`images/chapter-${i+1}.webp`)} alt={`Cena do capítulo: ${c.title}`} loading="lazy"/><div><span className="eyebrow">{number(i)} / {c.label}</span><h2>{c.title}</h2><p>{c.text}</p></div></article>)}</section>}
-  <section className="ending" id="ending"><div className="ending-copy" id="sobre"><span className="eyebrow">DO OUTRO LADO, UM NOVO COMEÇO</span><h2>O impossível<br/>se tornou <span>caminho.</span></h2><p>Uma história sobre coragem, liberdade e o primeiro passo diante do desconhecido.</p><button className="replay" onClick={()=>{window.scrollTo({top:0,behavior:reduced?'instant':'smooth'});}}><RotateCcw size={17}/> Reviver a história</button></div><div className="episode-preview glass" id="episodios"><img src={asset("images/moses-ending.webp")} alt="O caminho aberto entre as águas do mar" loading="lazy"/><div><span className="eyebrow">A JORNADA CONTINUA</span><h3>Além do mar.</h3><p>O próximo capítulo desta jornada.</p><span className="coming-soon">PRÓXIMO EPISÓDIO · EM BREVE</span></div></div></section>
+  {(reduced || failed) && <section className="static-chapters" aria-label="A história em cinco capítulos">{chapters.map((c,i)=><article id={`static-${i}`} key={c.label}><img src={asset(`images/moises-v2-chapter-${i+1}.webp`)} alt={`Cena do capítulo: ${c.title}`} loading="lazy"/><div><span className="eyebrow">{number(i)} / {c.label}</span><h2>{c.title}</h2><p>{c.text}</p></div></article>)}</section>}
+  <section className="ending" id="ending"><div className="ending-copy" id="sobre"><span className="eyebrow">DO OUTRO LADO, UM NOVO COMEÇO</span><h2>O impossível<br/>se tornou <span>caminho.</span></h2><p>Uma história sobre coragem, liberdade e o primeiro passo diante do desconhecido.</p><button className="replay" onClick={()=>{window.scrollTo({top:0,behavior:reduced?'instant':'smooth'});}}><RotateCcw size={17}/> Reviver a história</button></div><div className="episode-preview glass" id="episodios"><img src={asset("images/moises-v2-ending.webp")} alt="O caminho aberto entre as águas do mar" loading="lazy"/><div><span className="eyebrow">A JORNADA CONTINUA</span><h3>Além do mar.</h3><p>O próximo capítulo desta jornada.</p><span className="coming-soon">PRÓXIMO EPISÓDIO · EM BREVE</span></div></div></section>
   <footer><a className="wordmark" href="#historias">EXODUS<span>.</span></a><p>Histórias que atravessam o tempo.</p><a href="#historias">Voltar ao início <ArrowUpRight size={15}/></a></footer>
  </div>;
 }

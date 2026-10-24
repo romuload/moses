@@ -15,16 +15,13 @@ npm run preview
 
 ## Material usado
 
-Vídeo selecionado: `Moses_parts_the_Red_Sea_20260929222252.mp4`.
-Os dois vídeos fornecidos têm aproximadamente **10 segundos**, não os 15 descritos no briefing. A edição original foi preservada: não adicionamos câmera, cenas, pessoas ou movimentos ausentes. O arquivo selecionado mostra a abertura das águas e a entrada do povo, mas não executa a rotação de 180 graus descrita no briefing. A imagem `Imagem-inicial.jpg`, adicionada durante o desenvolvimento, fornece a capa em maior resolução. Ela corresponde à composição do primeiro frame e se dissolve sobre o vídeo. Não foi fornecida a captura de tela do layout mencionada no briefing. Não há imagens geradas ou footage externo.
+Vídeo selecionado nas duas versões: `video-moises.mp4` (720×1280, 24 fps, aproximadamente 14 segundos). Desktop usa `public/videos/moises-v2.mp4`, sem áudio e com keyframes a cada seis frames. Celular usa 111 frames WebP de 360×640 em `public/frames/moises-v2`, com interpolação, três carregamentos simultâneos e resolução de canvas limitada a 1,5×. Capa, encerramento e capítulos `moises-v2-*` vêm da mesma fonte.
 
-- `public/images/moses-hero.webp`: imagem fornecida em WebP, mesma composição do vídeo.
-- `public/images/moses-ending.webp`: frame final.
-- `public/images/chapter-*.webp`: cenas para leitura com movimento reduzido.
-- `public/videos/moses-red-sea.mp4`: H.264, 1280×720, sem áudio.
-- `public/videos/moses-red-sea-mobile.mp4`: versão leve 960×540, sem áudio.
+- `public/images/moises-v2-hero.webp`: capa extraída do novo vídeo.
+- `public/images/moises-v2-ending.webp`: encerramento da mesma cena.
+- `public/images/moises-v2-chapter-*.webp`: cenas para leitura com movimento reduzido.
 
-Os originais na raiz permanecem intactos. A prévia do próximo episódio é editorial e marcada como “Em breve”; não há um episódio adicional disponível.
+Os originais na raiz permanecem intactos. A prévia do próximo episódio é editorial e marcada como “Em breve”.
 
 ## Arquitetura e comportamento
 
@@ -38,23 +35,7 @@ No celular, a mídia usa object-fit cover para preencher o palco e os cartões d
 
 ## Preparar outro vídeo
 
-O projeto inclui `ffmpeg-static` como dependência de desenvolvimento. Keyframes a cada 6 frames permitem buscas curtas; para aparelhos mais lentos, `-g 1` dá acesso a cada frame, com custo de arquivo maior.
-
-```sh
-node_modules/ffmpeg-static/ffmpeg -i original.mp4 -an \
-  -c:v libx264 -preset fast -crf 19 -g 6 -keyint_min 6 \
-  -sc_threshold 0 -pix_fmt yuv420p -movflags +faststart \
-  public/videos/moses-red-sea.mp4
-
-node_modules/ffmpeg-static/ffmpeg -i original.mp4 -an -vf scale=960:-2 \
-  -c:v libx264 -preset fast -crf 22 -g 6 -keyint_min 6 \
-  -sc_threshold 0 -pix_fmt yuv420p -movflags +faststart \
-  public/videos/moses-red-sea-mobile.mp4
-
-node_modules/ffmpeg-static/ffmpeg -i original.mp4 -frames:v 1 public/images/moses-hero.webp
-```
-
-Ao trocar o vídeo, atualize os frames de capítulos e os valores `start` em `src/content.ts`. Os valores são frações da duração, não segundos fixos. Ajuste o enquadramento em `.cinematic-media` se o sujeito mudar de posição.
+Ao trocar a fonte, regenere o MP4 com `-an -g 6 -keyint_min 6 -sc_threshold 0 -movflags +faststart`, a sequência móvel com `fps=8,scale=360:640`, a capa e as imagens de capítulos. Atualize `FRAME_COUNT`, os caminhos versionados em `src/App.tsx`, o preload em `index.html` e os tempos em `src/content.ts`. O novo prefixo evita misturar mídia antiga em cache com a nova sequência.
 
 ## Publicação
 

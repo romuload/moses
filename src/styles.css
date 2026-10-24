@@ -12,3 +12,7 @@
 
 /* Touch devices: blur over a per-frame-changing canvas is the most expensive thing on screen. */
 @media(max-width:767px),(pointer:coarse){.glass{backdrop-filter:none;-webkit-backdrop-filter:none;background:linear-gradient(130deg,rgba(24,58,64,.9),rgba(9,36,44,.86))}.narrative{filter:none;transition:opacity .35s,transform .45s}.narrative.active{filter:none}}
+
+/* The unified portrait film keeps Moses centered on every screen. */
+.cinematic-media video,.cinematic-media img,.hero-poster{object-position:50% 60%}
+@media(max-width:767px){.cinematic-media video,.cinematic-media img,.hero-poster{object-position:50% center}}

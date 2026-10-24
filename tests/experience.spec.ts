@@ -5,10 +5,10 @@ test('video follows chapter selection forward and backward', async ({ page }) =>
  await page.goto('/');
  await expect.poll(()=>page.locator('video').evaluate((v: HTMLVideoElement)=>v.readyState)).toBeGreaterThanOrEqual(2);
  await page.getByRole('button',{name:'Entre na história'}).click();
- const last = page.getByRole('button',{name:'Capítulo 5: A travessia começa',exact:true});
+ const last = page.getByRole('button',{name:'Capítulo 5: O caminho da liberdade',exact:true});
  await expect(last).toBeVisible(); await last.click();
  await expect.poll(()=>page.locator('video').evaluate((v: HTMLVideoElement)=>v.currentTime)).toBeGreaterThan(8);
- await expect(page.locator('.narrative.active')).toContainText('A travessia começa');
+ await expect(page.locator('.narrative.active')).toContainText('O caminho da liberdade');
  await page.getByRole('button',{name:'Capítulo 2: Um gesto de fé',exact:true}).click();
  await expect.poll(()=>page.locator('video').evaluate((v: HTMLVideoElement)=>v.currentTime)).toBeLessThan(2.3);
  await expect(page.locator('.narrative.active')).toContainText('Um gesto de fé');
@@ -49,5 +49,15 @@ test('mobile scrubs a canvas frame sequence instead of seeking video',async({pag
  const start = await pixel();
  await page.evaluate(() => scrollTo(0, innerHeight * 4));
  await expect.poll(pixel).not.toBe(start);
+ await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
+ await expect.poll(pixel).toBe(start);
  expect(errors).toEqual([]);
+});
+
+test('mobile frame failure falls back to illustrated chapters', async ({ page }) => {
+ await page.setViewportSize({ width: 390, height: 844 });
+ await page.route('**/frames/moises-v2/001.webp', route => route.abort());
+ await page.goto('/');
+ await expect(page.locator('.static-chapters article')).toHaveCount(5);
+ await expect(page.locator('.pin-spacer')).toHaveCount(0);
 });

@@ -1,12 +1,14 @@
 // Scroll-scrubbed image sequence drawn on a canvas. Mobile browsers (iOS Safari
 // in particular) seek <video> too slowly for smooth scrubbing; drawing decoded
-// frames is instant. Adjacent frames are cross-faded so a 12fps sequence still
+// frames is instant. Adjacent frames are cross-faded so a lightweight sequence still
 // reads as continuous motion.
 
 type Options = { count: number; src: (index: number) => string; focusX: number; onFirstFrame: () => void; onError: () => void };
 
 export function createFrameSequence(canvas: HTMLCanvasElement, { count, src, focusX, onFirstFrame, onError }: Options) {
- const ctx = canvas.getContext('2d', { alpha: false })!;
+ const ctx = canvas.getContext('2d', { alpha: false });
+ if (!ctx) { queueMicrotask(onError); return { set(_value: number) {}, render() {}, dispose() {} }; }
+ const context = ctx;
  const frames: (HTMLImageElement | null)[] = Array(count).fill(null);
  let progress = 0, dirty = true, disposed = false;
 
@@ -34,7 +36,7 @@ export function createFrameSequence(canvas: HTMLCanvasElement, { count, src, foc
   img.onerror = () => { if (index === 0) onError(); else loadNext(); };
   img.src = src(index);
  };
- for (let i = 0; i < 4; i++) loadNext();
+ for (let i = 0; i < 3; i++) loadNext();
 
  const nearest = (index: number) => {
   for (let d = 0; d < count; d++) {
@@ -45,7 +47,7 @@ export function createFrameSequence(canvas: HTMLCanvasElement, { count, src, foc
  };
 
  const resize = () => {
-  const dpr = Math.min(devicePixelRatio || 1, 2);
+  const dpr = Math.min(devicePixelRatio || 1, 1.5);
   const w = Math.round(canvas.clientWidth * dpr), h = Math.round(canvas.clientHeight * dpr);
   if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; dirty = true; }
  };
@@ -57,8 +59,8 @@ export function createFrameSequence(canvas: HTMLCanvasElement, { count, src, foc
   const { width: cw, height: ch } = canvas;
   const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
   const w = img.naturalWidth * scale, h = img.naturalHeight * scale;
-  ctx.globalAlpha = alpha;
-  ctx.drawImage(img, (cw - w) * focusX, (ch - h) / 2, w, h);
+  context.globalAlpha = alpha;
+  context.drawImage(img, (cw - w) * focusX, (ch - h) / 2, w, h);
  };
 
  return {
@@ -73,8 +75,8 @@ export function createFrameSequence(canvas: HTMLCanvasElement, { count, src, foc
    drawCover(base, 1);
    const blend = frames[b];
    if (blend && blend !== base && t > .01) drawCover(blend, t);
-   ctx.globalAlpha = 1;
+   context.globalAlpha = 1;
   },
-  dispose() { disposed = true; observer.disconnect(); },
+  dispose() { disposed = true; observer.disconnect(); frames.fill(null); canvas.width = 0; canvas.height = 0; },
  };
 }
